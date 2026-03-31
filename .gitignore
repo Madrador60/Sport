@@ -1,0 +1,6 @@
+node_modules
+dist
+Thumbs.db
+Desktop.ini
+npm-debug.log*
+diagnostics/api_diagnostic.json
