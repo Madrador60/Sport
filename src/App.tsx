@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import './App.css';
 import { AppHeader } from './components/AppHeader';
 import { SportEventModal } from './components/SportEventModal';
@@ -8,6 +8,7 @@ import { TVPlayerModal } from './components/TVPlayerModal';
 import { useSportsData } from './hooks/useSportsData';
 import { useTVChannels } from './hooks/useTVChannels';
 import { AppTab, FlatEvent, TVChannel } from './types';
+import { normalizeSearchableText } from './utils/common';
 import { getDefaultTVStream } from './utils/tv';
 
 function App() {
@@ -20,7 +21,12 @@ function App() {
   const [selectedEvent, setSelectedEvent] = useState<FlatEvent | null>(null);
   const [selectedTV, setSelectedTV] = useState<TVChannel | null>(null);
   const [activeTVStream, setActiveTVStream] = useState<string | null>(null);
-  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+  const normalizedSearchQuery = useMemo(
+    () => normalizeSearchableText(deferredSearchQuery),
+    [deferredSearchQuery],
+  );
+  const isSearchPending = searchQuery !== deferredSearchQuery;
 
   const sports = useMemo(() => {
     const sportList = Array.from(new Set(events.map((event) => event.sportType))).sort(
@@ -30,12 +36,20 @@ function App() {
     return ['Tous', ...sportList];
   }, [events]);
 
+  useEffect(() => {
+    if (selectedSport !== 'Tous' && !sports.includes(selectedSport)) {
+      setSelectedSport('Tous');
+    }
+  }, [selectedSport, sports]);
+
   const filteredEvents = useMemo(() => {
     return events.filter((event) => {
       const matchesSport = selectedSport === 'Tous' || event.sportType === selectedSport;
       const matchesSearch =
         normalizedSearchQuery.length === 0 ||
-        event.match.toLowerCase().includes(normalizedSearchQuery);
+        normalizeSearchableText(`${event.match} ${event.sportType}`).includes(
+          normalizedSearchQuery,
+        );
 
       return matchesSport && matchesSearch;
     });
@@ -43,7 +57,9 @@ function App() {
 
   const filteredTV = useMemo(() => {
     return tvChannels.filter((channel) =>
-      channel.name.toLowerCase().includes(normalizedSearchQuery),
+      normalizeSearchableText(`${channel.name} ${channel.country}`).includes(
+        normalizedSearchQuery,
+      ),
     );
   }, [normalizedSearchQuery, tvChannels]);
 
@@ -57,11 +73,19 @@ function App() {
     setActiveTVStream(null);
   };
 
+  const searchPlaceholder =
+    activeTab === 'sports'
+      ? 'Rechercher un match ou un sport'
+      : 'Rechercher une chaine TV';
+
   return (
     <div className="app">
       <AppHeader
         activeTab={activeTab}
+        isSearchPending={isSearchPending}
         searchQuery={searchQuery}
+        searchPlaceholder={searchPlaceholder}
+        onClearSearch={() => setSearchQuery('')}
         onSearchChange={setSearchQuery}
         onTabChange={setActiveTab}
       />
@@ -72,8 +96,10 @@ function App() {
             events={filteredEvents}
             loading={loadingSports}
             notice={sportsNotice}
+            searchQuery={searchQuery}
             selectedSport={selectedSport}
             sports={sports}
+            totalEvents={events.length}
             onOpenEvent={setSelectedEvent}
             onSportChange={setSelectedSport}
           />
@@ -82,6 +108,8 @@ function App() {
             channels={filteredTV}
             loading={loadingTV}
             notice={tvNotice}
+            searchQuery={searchQuery}
+            totalChannels={tvChannels.length}
             onOpenChannel={openTVPlayer}
           />
         )}

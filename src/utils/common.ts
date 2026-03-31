@@ -9,3 +9,9 @@ export const toErrorMessage = (error: unknown): string => {
   return String(error);
 };
 
+export const normalizeSearchableText = (value: string): string =>
+  value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toLowerCase();

@@ -1,5 +1,6 @@
 import { TVChannel } from '../types';
 import { buildTvEmbedUrl, buildTvPlayerUrl, getChannelInitials } from '../utils/tv';
+import { ModalShell } from './common/ModalShell';
 
 type TVPlayerModalProps = {
   activeStream: string | null;
@@ -27,68 +28,72 @@ export const TVPlayerModal = ({
   const sources = buildTVSources(channel);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-content tv-modal-content"
-        onClick={(clickEvent) => clickEvent.stopPropagation()}
-      >
-        <div className="modal-header">
+    <ModalShell
+      title={`${channel.name} en direct`}
+      subtitle={`${sources.length} source${sources.length > 1 ? 's' : ''} disponible${
+        sources.length > 1 ? 's' : ''
+      }`}
+      headerMedia={
+        <>
           {channel.image ? (
-            <img src={channel.image} alt={channel.name} className="modal-logo" />
+            <img src={channel.image} alt={channel.name} className="modal-logo" loading="lazy" />
           ) : (
             <div className="tv-logo-fallback modal-tv-logo-fallback">
               {getChannelInitials(channel.name)}
             </div>
           )}
-          <h2 className="modal-title">{channel.name} en direct</h2>
-        </div>
-
-        <div className="tv-player-shell">
-          {activeStream ? (
-            <iframe
-              key={activeStream}
-              src={buildTvEmbedUrl(activeStream)}
-              title={`Lecteur ${channel.name}`}
-              className="tv-player-frame"
-              allowFullScreen
-              loading="lazy"
-            />
-          ) : (
-            <div className="empty-state">Aucune source disponible pour cette chaine.</div>
-          )}
-        </div>
-
-        <div className="channels-list tv-source-list">
-          {sources.length > 0 ? (
-            sources.map((source) => (
-              <button
-                key={`${channel.name}-${source.label}`}
-                type="button"
-                className={`channel-link channel-link-button ${
-                  activeStream === source.stream ? 'channel-link-active' : ''
-                }`}
-                onClick={() => onSelectStream(source.stream)}
-              >
-                {source.label}
-                {source.status === 'offline' ? ' (hors ligne)' : ''}
-              </button>
-            ))
-          ) : (
-            <div className="empty-state">Aucune source disponible pour cette chaine.</div>
-          )}
-        </div>
-
-        {activeStream && (
-          <a
-            href={buildTvPlayerUrl(activeStream)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="channel-link tv-open-link"
-          >
-            Ouvrir dans un nouvel onglet
-          </a>
+        </>
+      }
+      panelClassName="tv-modal-content"
+      onClose={onClose}
+    >
+      <div className="tv-player-shell">
+        {activeStream ? (
+          <iframe
+            key={activeStream}
+            src={buildTvEmbedUrl(activeStream)}
+            title={`Lecteur ${channel.name}`}
+            className="tv-player-frame"
+            allowFullScreen
+            loading="lazy"
+          />
+        ) : (
+          <div className="empty-state">Aucune source disponible pour cette chaine.</div>
         )}
+      </div>
 
+      <div className="channels-list tv-source-list">
+        {sources.length > 0 ? (
+          sources.map((source) => (
+            <button
+              key={`${channel.name}-${source.label}`}
+              type="button"
+              className={`channel-link channel-link-button ${
+                activeStream === source.stream ? 'channel-link-active' : ''
+              }`}
+              onClick={() => onSelectStream(source.stream)}
+            >
+              {source.label}
+              {source.status === 'offline' ? ' (hors ligne)' : ''}
+            </button>
+          ))
+        ) : (
+          <div className="empty-state">Aucune source disponible pour cette chaine.</div>
+        )}
+      </div>
+
+      {activeStream && (
+        <a
+          href={buildTvPlayerUrl(activeStream)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="channel-link tv-open-link"
+        >
+          Ouvrir dans un nouvel onglet
+        </a>
+      )}
+
+      <div className="modal-actions">
         <button
           type="button"
           className="watch-btn watch-btn-secondary modal-close-button"
@@ -97,7 +102,7 @@ export const TVPlayerModal = ({
           Fermer
         </button>
       </div>
-    </div>
+    </ModalShell>
   );
 };
 
@@ -122,4 +127,3 @@ const buildTVSources = (channel: TVChannel): TVSource[] => {
 
   return sources;
 };
-
