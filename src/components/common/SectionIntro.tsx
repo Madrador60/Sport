@@ -17,7 +17,7 @@ export const SectionIntro = ({
     <div className="section-copy">
       <p className="section-eyebrow">{eyebrow}</p>
       <div className="section-title-row">
-        <h1 className="section-title">{title}</h1>
+        <h2 className="section-title">{title}</h2>
         <span className="section-badge">{badge}</span>
       </div>
       <p className="section-description">{description}</p>

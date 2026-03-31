@@ -2,6 +2,16 @@ import { FlatEvent } from '../types';
 
 export const fallbackEvents: FlatEvent[] = [
   {
+    unixTimestamp: 1774996200,
+    date: '2026-03-31',
+    sportType: 'Football',
+    match: 'France - Allemagne (Friendly International)',
+    channels: [
+      'https://myembed.xyz/stream.php?id=3855345',
+      'https://myembed.xyz/stream.php?id=3855346',
+    ],
+  },
+  {
     unixTimestamp: 1774930200,
     date: '2026-03-31',
     sportType: 'Tennis',

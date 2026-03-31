@@ -1,0 +1,72 @@
+import { FlatEvent } from '../types';
+import { normalizeSearchableText } from './common';
+
+export const FRENCH_SPORT_FILTER = 'Francais';
+
+const FRENCH_EVENT_MARKERS = [
+  'francais',
+  'francaise',
+  'france',
+  'french',
+  'french open',
+  'french cup',
+  '(fra)',
+  ' fra)',
+  ' ligue 1',
+  ' ligue 2',
+  ' coupe de france',
+  ' coupe de la ligue',
+  ' national ',
+  ' top 14',
+  ' pro d2',
+  ' betclic elite',
+  ' paris saint-germain',
+  ' paris saint germain',
+  ' psg ',
+  'psg-',
+  ' psg',
+  ' olympique de marseille',
+  ' marseille',
+  ' olympique lyonnais',
+  ' lyon',
+  ' as monaco',
+  ' monaco',
+  ' losc',
+  ' lille',
+  ' stade rennais',
+  ' rennes',
+  ' rc lens',
+  ' lens',
+  ' nice',
+  ' mhsc',
+  ' montpellier',
+  ' strasbourg',
+  ' toulouse',
+  ' brest',
+  ' reims',
+  ' angers',
+  ' metz',
+  ' auxerre',
+  ' le havre',
+  ' lorient',
+  ' clermont',
+  ' nantes',
+  ' paris ',
+  ' saint-etienne',
+  ' saint etienne',
+  ' grenoble',
+  ' guingamp',
+  ' troyes',
+  ' laval',
+  ' caen',
+  ' amiens',
+  ' roland garros',
+  ' bercy',
+  ' paris masters',
+];
+
+export const isFrenchEvent = (event: FlatEvent): boolean => {
+  const searchableValue = normalizeSearchableText(`${event.match} ${event.sportType}`);
+
+  return FRENCH_EVENT_MARKERS.some((marker) => searchableValue.includes(marker));
+};

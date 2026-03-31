@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { fallbackTVChannels } from '../data/fallbackTvChannels';
-import { fetchFrenchChannels, TV_FALLBACK_NOTICE } from '../services/tvChannelsApi';
-import { TVChannel } from '../types';
+import { fallbackNews } from '../data/fallbackNews';
+import { fetchFrenchSportsNews, NEWS_FALLBACK_NOTICE } from '../services/newsApi';
+import { NewsArticle } from '../types';
 
-export const useTVChannels = () => {
-  const [channels, setChannels] = useState<TVChannel[]>(fallbackTVChannels);
+export const useNewsFeed = () => {
+  const [articles, setArticles] = useState<NewsArticle[]>(fallbackNews);
   const [loading, setLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
@@ -14,20 +14,20 @@ export const useTVChannels = () => {
   useEffect(() => {
     const controller = new AbortController();
 
-    const loadChannels = async () => {
+    const loadNews = async () => {
       try {
-        const officialChannels = await fetchFrenchChannels(controller.signal);
+        const nextArticles = await fetchFrenchSportsNews(controller.signal);
         if (controller.signal.aborted) return;
 
-        setChannels(officialChannels);
+        setArticles(nextArticles);
         setNotice(null);
         setLastUpdated(Date.now());
       } catch (fetchError) {
         if (controller.signal.aborted) return;
 
-        console.error('TV Fetch Error:', fetchError);
-        setChannels(fallbackTVChannels);
-        setNotice(TV_FALLBACK_NOTICE);
+        console.error('News Fetch Error:', fetchError);
+        setArticles(fallbackNews);
+        setNotice(NEWS_FALLBACK_NOTICE);
         setLastUpdated(Date.now());
       } finally {
         if (!controller.signal.aborted) {
@@ -37,12 +37,12 @@ export const useTVChannels = () => {
       }
     };
 
-    loadChannels();
+    loadNews();
     return () => controller.abort();
   }, [refreshToken]);
 
   return {
-    channels,
+    articles,
     loading,
     isRefreshing,
     lastUpdated,

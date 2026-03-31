@@ -5,6 +5,7 @@ type ModalShellProps = {
   title: string;
   subtitle?: string;
   headerMedia?: ReactNode;
+  topActions?: ReactNode;
   panelClassName?: string;
   onClose: () => void;
   children: ReactNode;
@@ -14,6 +15,7 @@ export const ModalShell = ({
   title,
   subtitle,
   headerMedia,
+  topActions,
   panelClassName,
   onClose,
   children,
@@ -33,14 +35,17 @@ export const ModalShell = ({
         aria-describedby={subtitle ? subtitleId : undefined}
         onClick={(clickEvent) => clickEvent.stopPropagation()}
       >
-        <button
-          type="button"
-          className="modal-close-icon"
-          aria-label="Fermer la fenetre"
-          onClick={onClose}
-        >
-          X
-        </button>
+        <div className="modal-top-actions">
+          {topActions}
+          <button
+            type="button"
+            className="modal-close-icon"
+            aria-label="Fermer la fenetre"
+            onClick={onClose}
+          >
+            X
+          </button>
+        </div>
 
         <div className="modal-header">
           {headerMedia}

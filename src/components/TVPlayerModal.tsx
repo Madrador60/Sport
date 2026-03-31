@@ -1,11 +1,14 @@
+import { useEffect } from 'react';
 import { TVChannel } from '../types';
-import { buildTvEmbedUrl, buildTvPlayerUrl, getChannelInitials } from '../utils/tv';
+import { useEmbeddedSourceFallback } from '../hooks/useEmbeddedSourceFallback';
+import { buildTvEmbedUrl, getChannelInitials } from '../utils/tv';
 import { ModalShell } from './common/ModalShell';
 
 type TVPlayerModalProps = {
   activeStream: string | null;
   channel: TVChannel | null;
   onClose: () => void;
+  onMinimize?: (stream: string) => void;
   onSelectStream: (stream: string) => void;
 };
 
@@ -19,6 +22,7 @@ export const TVPlayerModal = ({
   activeStream,
   channel,
   onClose,
+  onMinimize,
   onSelectStream,
 }: TVPlayerModalProps) => {
   if (!channel) {
@@ -26,6 +30,28 @@ export const TVPlayerModal = ({
   }
 
   const sources = buildTVSources(channel);
+  const {
+    activeSource,
+    failedSources,
+    isLoading,
+    notice,
+    setActiveSource,
+    handleFrameError,
+    handleFrameLoad,
+  } = useEmbeddedSourceFallback(
+    sources.map((source) => ({
+      label: source.label,
+      value: source.stream,
+    })),
+    activeStream,
+    channel.name,
+  );
+
+  useEffect(() => {
+    if (activeSource && activeSource !== activeStream) {
+      onSelectStream(activeSource);
+    }
+  }, [activeSource, activeStream, onSelectStream]);
 
   return (
     <ModalShell
@@ -45,18 +71,38 @@ export const TVPlayerModal = ({
         </>
       }
       panelClassName="tv-modal-content"
+      topActions={
+        activeSource ? (
+          <button
+            type="button"
+            className="modal-utility-btn"
+            onClick={() => onMinimize?.(activeSource)}
+          >
+            Reduire
+          </button>
+        ) : null
+      }
       onClose={onClose}
     >
+      {notice ? <div className="notice-banner">{notice}</div> : null}
+
       <div className="tv-player-shell">
-        {activeStream ? (
-          <iframe
-            key={activeStream}
-            src={buildTvEmbedUrl(activeStream)}
-            title={`Lecteur ${channel.name}`}
-            className="tv-player-frame"
-            allowFullScreen
-            loading="lazy"
-          />
+        {activeSource ? (
+          <>
+            <iframe
+              key={activeSource}
+              src={buildTvEmbedUrl(activeSource)}
+              title={`Lecteur ${channel.name}`}
+              className="tv-player-frame"
+              allowFullScreen
+              loading="lazy"
+              onError={handleFrameError}
+              onLoad={handleFrameLoad}
+            />
+            {isLoading ? (
+              <div className="player-status-banner">Connexion a la source en cours...</div>
+            ) : null}
+          </>
         ) : (
           <div className="empty-state">Aucune source disponible pour cette chaine.</div>
         )}
@@ -69,9 +115,12 @@ export const TVPlayerModal = ({
               key={`${channel.name}-${source.label}`}
               type="button"
               className={`channel-link channel-link-button ${
-                activeStream === source.stream ? 'channel-link-active' : ''
-              }`}
-              onClick={() => onSelectStream(source.stream)}
+                activeSource === source.stream ? 'channel-link-active' : ''
+              } ${failedSources.includes(source.stream) ? 'channel-link-failed' : ''}`}
+              onClick={() => {
+                setActiveSource(source.stream);
+                onSelectStream(source.stream);
+              }}
             >
               {source.label}
               {source.status === 'offline' ? ' (hors ligne)' : ''}
@@ -81,17 +130,6 @@ export const TVPlayerModal = ({
           <div className="empty-state">Aucune source disponible pour cette chaine.</div>
         )}
       </div>
-
-      {activeStream && (
-        <a
-          href={buildTvPlayerUrl(activeStream)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="channel-link tv-open-link"
-        >
-          Ouvrir dans un nouvel onglet
-        </a>
-      )}
 
       <div className="modal-actions">
         <button

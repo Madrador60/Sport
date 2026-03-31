@@ -1,4 +1,6 @@
-export type AppTab = 'sports' | 'tv';
+export type AppTab = 'sports' | 'tv' | 'news' | 'favorites';
+export type EventTimeStatus = 'live' | 'upcoming' | 'finished';
+export type EventTimeFilter = 'Tous' | 'En direct' | 'Bientot' | 'Fini';
 
 export interface SportEvent {
   unixTimestamp: number;
@@ -29,4 +31,16 @@ export interface TVChannel {
   stream2: string;
   status1?: string | null;
   status2?: string | null;
+}
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  summary: string;
+  category: string;
+  link: string;
+  image: string;
+  source: string;
+  publishedTimestamp: number;
+  author?: string;
 }
