@@ -43,6 +43,18 @@ npm run test:api
 
 Le rapport est ecrit dans `diagnostics/api_diagnostic.json`.
 
+## Mise En Ligne
+
+Le projet peut etre publie sur GitHub Pages depuis le depot `Madrador60/Sport`.
+
+URL du site :
+
+```text
+https://madrador60.github.io/Sport/
+```
+
+Le deploiement est automatique a chaque `push` sur la branche `main` via le workflow GitHub Actions.
+
 ## Structure du dossier
 
 ```text
